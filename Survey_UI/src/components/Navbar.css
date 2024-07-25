@@ -1,0 +1,34 @@
+.navcolor {
+    background: rgb(21, 101, 192);
+    background: linear-gradient(142deg, rgba(21, 101, 192, 1) 54%, rgba(0, 212, 255, 1) 100%);
+}
+
+.logoFlag {
+    padding: 1vh 1vw;
+    text-align: center;
+}
+
+.logoFlag img {
+    height: 5rem;
+    width: 5rem;
+}
+
+/* .language-switch label {
+    margin-bottom: 0;
+    cursor: pointer;
+} */
+
+.language-switch {
+    margin-right: 20px;
+    margin-bottom: 0px !important;
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.language-switch input,
+.language-switch label {
+    cursor: pointer;
+    margin-left: 4px !important;
+}

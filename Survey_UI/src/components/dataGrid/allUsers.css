@@ -1,0 +1,29 @@
+.tree-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tree-table th {
+    text-align: left;
+    font-weight: bold;
+    padding: 0.5rem;
+    border-bottom: 2px solid #ccc;
+}
+
+.tree-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.tree-table tr.category-row td:first-child {
+    font-weight: 600;
+}
+
+.tree-table tr.subcategory-row td:first-child {
+    padding-left: 2rem;
+}
+
+.tree-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+

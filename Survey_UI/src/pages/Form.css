@@ -1,0 +1,28 @@
+.main_form{
+    margin: 0;
+    padding: 0;
+}
+.main_Container{
+    width: auto;
+    height: auto;
+    margin:5rem 25rem;
+    border: 1px solid grey;
+    padding: 5rem 10rem;
+}
+
+.btn_Add{
+    border: 1px solid transparent;
+    background-color: white;
+    font-weight: bolder;
+    font-size: 25px;
+}
+
+.fram{
+    max-height: 200px;
+    overflow-y: auto;   
+}
+
+.dropi{
+    text-align: center;
+}
+
