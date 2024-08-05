@@ -27,7 +27,7 @@ function FileUpload({ onInputChange, index, name }) {
         onChange={handleChildInputChange}
         id='file-upload'
         name={name}
-        accept='.pdf, .doc, .docx, .png, .jpeg, .jpg'
+        accept='.png, .jpeg, .jpg'
       />
     </Button>
   );

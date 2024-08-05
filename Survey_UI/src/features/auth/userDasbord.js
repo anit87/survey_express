@@ -17,7 +17,7 @@ export const userDashboard = createApi({
     tagTypes: ['users'],
     endpoints: (builder) => ({
 
-        getSurveyForms: builder.mutation({
+        getSurveyForms: builder.query({
             query: (body) => ({
                 url: body.endpoint,
                 params: {
@@ -31,13 +31,15 @@ export const userDashboard = createApi({
                     startDate: body.startDate,
                     endDate: body.endDate
                 },
-                method: 'GET',
+                method: 'POST',
+                body:{page:body.page,limit:body.limit}
             }),
-            transformResponse: (response, meta, arg) => response.data,
+            transformResponse: (response, meta, arg) => response,
             transformErrorResponse: (response, meta, arg) => response.data || response.error,
             invalidatesTags: ['Users'],
+            keepUnusedDataFor: 5,
         }),
     }),
 });
 
-export const { useGetSurveyFormsMutation } = userDashboard;
+export const { useGetSurveyFormsQuery } = userDashboard;

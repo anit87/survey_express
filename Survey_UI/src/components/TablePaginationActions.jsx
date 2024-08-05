@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
@@ -78,8 +78,8 @@ const CustomTablePagination  = ({ count, rowsPerPage, page, onPageChange, onRows
         <TableFooter>
             <TableRow>
                 <TablePagination
-                    rowsPerPageOptions={[10, 20, 50, { label: 'All', value: -1 }]}
-                    colSpan={3}
+                    rowsPerPageOptions={[10, 20, 30, 40, 50]}
+                    colSpan={8}
                     count={count}
                     rowsPerPage={rowsPerPage}
                     page={page}

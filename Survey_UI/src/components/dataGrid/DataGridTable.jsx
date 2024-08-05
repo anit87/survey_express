@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import Pagination from '@mui/material/Pagination';
 
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -16,7 +17,6 @@ import { capitalizeFirstLetter, verifyUser } from '../../utils/functions/verifyU
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 
-import CustomTablePagination from '../TablePaginationActions';
 import DynamicDatePicker from '../inputs/DynamicDatePicker';
 import Loader from '../loader';
 import NoData from '../NoData';
@@ -25,7 +25,7 @@ import { SelectInput } from '../inputs/SelectInput';
 import { generateIncomeOptions, maritalOptions, generateTrueFalseOptions, generateEducationalOptions, generatereligionOptions, occupationOptios, generateCasteOptions, generateEstablishmentOptions } from "../../utils/constants";
 import { useLanguageData } from '../../utils/LanguageContext';
 import { modes, useModeData } from '../../utils/ModeContext';
-import { useGetSurveyFormsMutation } from '../../features/auth/userDasbord';
+import { useGetSurveyFormsQuery } from '../../features/auth/userDasbord';
 
 const tableCells = [
     { label: 'S.No' },
@@ -74,8 +74,8 @@ export default function SurveyForms() {
 
 
     const [userDetail, setUserDetail] = useState({});
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
 
     const [filterData, setFilterData] = useState({
         birthdayDate: '',
@@ -95,7 +95,14 @@ export default function SurveyForms() {
         result: { agents: [], fieldAgents: [] }
     });
 
-    const [getSurveyForms, { isLoading: verifyLoading, data }] = useGetSurveyFormsMutation();
+    const { isLoading: verifyLoading, data: formsData } = useGetSurveyFormsQuery({
+        ...filterData,
+        page,
+        limit: rowsPerPage,
+        endpoint: mode === modes.residential ? 'users/allrecords' : 'commercial/allrecords'
+    });
+    // await getSurveyForms({ ...filterData, endpoint, limit: rowsPerPage, page });
+    // const [getSurveyForms, { isLoading: verifyLoading, data: formsData }] = useGetSurveyFormsQuery();
 
     const incomeOptions = generateIncomeOptions(translate);
     const trueFalseOptions = generateTrueFalseOptions(translate);
@@ -110,23 +117,20 @@ export default function SurveyForms() {
         getActiveUsers(user);
     }, [])
 
-    useEffect(() => {
-        let endpoint = mode === modes.residential ? 'users/allrecords' : 'commercial'
-        getData(endpoint);
-    }, [filterData, mode])
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         let endpoint = mode === modes.residential ? 'users/allrecords' : 'commercial'
+    //         await getSurveyForms({ ...filterData, endpoint, limit: rowsPerPage, page });
+    //     };
+
+    //     fetchData();
+    // }, [filterData, mode, page]);
 
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': localStorage.getItem("surveyApp"),
     };
 
-    const getData = async (endpoint) => {
-        try {
-            await getSurveyForms({ ...filterData, endpoint });
-        } catch (error) {
-            console.log("Error in Dashboard ", error);
-        }
-    }
     const getActiveUsers = async (userInfo) => {
         try {
             if (userInfo.userRole !== 'admin' && userInfo.userRole !== '2') {
@@ -167,19 +171,10 @@ export default function SurveyForms() {
             console.log(error)
         }
     }
-
     // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows =
-        page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (data?.length)) : 0;
+    const emptyRows = (page > 1 && formsData?.data?.length) ? Math.max(0, (page * rowsPerPage) - (formsData?.data?.length)) : 0;
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
+    // console.log("emptyRows ", emptyRows);
 
     const changeHandler = (e) => {
         setFilterData({
@@ -189,10 +184,14 @@ export default function SurveyForms() {
     }
 
     const baseHeaders = mode === modes.residential ? tableCells : commercialCells;
+
     const tableHeaders = userDetail.userRole === 'admin'
         ? [...baseHeaders.slice(0, 5), { label: 'Supervisor' }, ...baseHeaders.slice(5)]
-        : baseHeaders
-        ;
+        : baseHeaders;
+
+    const handleChangePage = (e, newPage) => {
+        setPage(newPage);
+    };
 
     return (
         <TableContainer component={Paper}>
@@ -215,10 +214,9 @@ export default function SurveyForms() {
                 </>
             }
 
-            {mode === modes.residential &&
+            {mode === modes.residential && (
                 <>
                     <h6 className='m-4' style={{ fontSize: "20px", fontWeight: "bold" }} >Smart Filters</h6>
-
                     <Stack
                         direction={{ xs: 'column', sm: 'row' }}
                         spacing={{ xs: 1, sm: 2, md: 4 }}
@@ -230,7 +228,7 @@ export default function SurveyForms() {
                             name="maritalStatus"
                             options={maritalOptions}
                             value={filterData.maritalStatus}
-                            changeHandler={(e) => changeHandler(e)}
+                            changeHandler={changeHandler}
                         />
 
                         <SelectInput
@@ -238,7 +236,7 @@ export default function SurveyForms() {
                             name="monthlyHouseholdIncome"
                             options={incomeOptions}
                             value={filterData.monthlyHouseholdIncome}
-                            changeHandler={(e) => changeHandler(e)}
+                            changeHandler={changeHandler}
                         />
 
                         <SelectInput
@@ -246,7 +244,7 @@ export default function SurveyForms() {
                             name="isOwnProperty"
                             options={trueFalseOptions}
                             value={filterData.isOwnProperty}
-                            changeHandler={(e) => changeHandler(e)}
+                            changeHandler={changeHandler}
                         />
 
                         <DynamicDatePicker
@@ -271,14 +269,14 @@ export default function SurveyForms() {
                                 name="religion"
                                 options={religionOptions}
                                 value={filterData.religion}
-                                changeHandler={(e) => changeHandler(e)}
+                                changeHandler={changeHandler}
                             />
                             <SelectInput
                                 label="Caste"
                                 name="caste"
                                 options={casteOptions}
                                 value={filterData.caste}
-                                changeHandler={(e) => changeHandler(e)}
+                                changeHandler={changeHandler}
                             />
                         </FormControl>
 
@@ -287,7 +285,7 @@ export default function SurveyForms() {
                             name="occupationStatus"
                             options={occupationOptios}
                             value={filterData.occupationStatus}
-                            changeHandler={(e) => changeHandler(e)}
+                            changeHandler={changeHandler}
                         />
 
                         <SelectInput
@@ -295,7 +293,7 @@ export default function SurveyForms() {
                             name="cweEducation"
                             options={educationalOptions}
                             value={filterData.cweEducation}
-                            changeHandler={(e) => changeHandler(e)}
+                            changeHandler={changeHandler}
                         />
 
                         <DynamicDatePicker
@@ -307,92 +305,91 @@ export default function SurveyForms() {
                         />
                     </Stack>
                 </>
-            }
+            )}
 
-            {
-                <>
-                    {verifyLoading ? <Loader /> :
-                        (!data || data.length < 1) ? <NoData msg="No Surveys Found" /> :
-                            <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
-                                <TableHeader tableCells={tableHeaders} />
-                                <TableBody>
-                                    {(rowsPerPage > 0
-                                        ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        : data
-                                    ).map((row, i) => (
-                                        <TableRow key={row._id}>
-                                            <TableCell component="th" scope="row">
-                                                {parseInt(i) + 1}
-                                            </TableCell>
-                                            <TableCell component="th" scope="row">
-                                                {mode === modes.residential ? row.respondentName : (row.establishmentName || 'N/A')}
-                                            </TableCell>
-                                            <TableCell style={{ width: 160 }}>
-                                                {
-                                                    mode === modes.residential ?
-                                                        row.mobileNo :
-                                                        establishmentOptions.find(item => item.value == row?.establishmentType)?.label
+            {verifyLoading ? (
+                <Loader />
+            ) : (
+                !formsData?.data?.length ? (
+                    <NoData msg="No Surveys Found" />
+                ) : (
+                    <>
+                        <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
+                            <TableHeader tableCells={tableHeaders} />
+                            <TableBody>
+                                {formsData?.data?.map((row, i) => (
+                                    <TableRow key={row._id}>
+                                        <TableCell component="th" scope="row">
+                                            {(page - 1) * rowsPerPage + i + 1}
+                                        </TableCell>
+                                        <TableCell component="th" scope="row">
+                                            {mode === modes.residential ? row.respondentName : (row.establishmentName || 'N/A')}
+                                        </TableCell>
+                                        <TableCell style={{ width: 160 }}>
+                                            {
+                                                mode === modes.residential ?
+                                                    row.mobileNo :
+                                                    establishmentOptions.find(item => item.value == row?.establishmentType)?.label
 
-                                                }
-                                            </TableCell>
-                                            <TableCell style={{ width: 160 }}>
-                                                {mode === modes.residential ? row.pincode : (row.natureOfBusiness || 'N/A')}
-                                            </TableCell>
-                                            <TableCell style={{ width: 160 }}>
-                                                {mode === modes.residential ? (row.maritalStatus === 1 ? "Single" : "Married") : (row.contactPerson || 'N/A')}
-                                            </TableCell>
-                                            {(userDetail.userRole != '3' && userDetail.userRole != '2') &&
-                                                <TableCell style={{ width: 160 }}>
-                                                    {capitalizeFirstLetter(row?.filledBy?.displayName) || "Admin"}
-                                                </TableCell>
                                             }
-                                            {mode === modes.commercial &&
-                                                <TableCell style={{ width: 160 }}>
-                                                    {row.contactNumber || 'N/A'}
-                                                </TableCell>
+                                        </TableCell>
+                                        <TableCell style={{ width: 160 }}>
+                                            {mode === modes.residential ? row.pincode : (row.natureOfBusiness || 'N/A')}
+                                        </TableCell>
+                                        <TableCell style={{ width: 160 }}>
+                                            {mode === modes.residential ? (row.maritalStatus === 1 ? "Single" : "Married") : (row.contactPerson || 'N/A')}
+                                        </TableCell>
+                                        {(userDetail.userRole != '3' && userDetail.userRole != '2') &&
+                                            <TableCell style={{ width: 160 }}>
+                                                {capitalizeFirstLetter(row?.filledBy?.displayName) || "Admin"}
+                                            </TableCell>
+                                        }
+                                        {mode === modes.commercial &&
+                                            <TableCell style={{ width: 160 }}>
+                                                {row.contactNumber || 'N/A'}
+                                            </TableCell>
+                                        }
+                                        <TableCell>
+                                            {formatDate(row.date)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {mode === modes.residential &&
+                                                <IconButton color="primary" aria-label="add to shopping cart"
+                                                    onClick={() => navigate(`/formdetail/${row._id}`)}
+                                                >
+                                                    <VisibilityIcon />
+                                                </IconButton>
                                             }
-                                            <TableCell>
-                                                {formatDate(row.date)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {mode === modes.residential &&
-                                                    <IconButton color="primary" aria-label="add to shopping cart"
-                                                        onClick={() => navigate(`/formdetail/${row._id}`)}
-                                                    >
-                                                        <VisibilityIcon />
-                                                    </IconButton>
-                                                }
 
-                                                {userDetail.userRole === "admin" &&
-                                                    <IconButton color="primary" aria-label="add to shopping cart"
-                                                        onClick={() => navigate(`/${(mode === modes.residential) ? 'form' : 'commercial'}/${row._id}`)}
-                                                    >
-                                                        <EditTwoToneIcon />
-                                                    </IconButton>
-                                                }
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {
-                                        emptyRows > 0 &&
-                                        <TableRow style={{ height: 53 * emptyRows }}>
-                                            <TableCell colSpan={6} />
-                                        </TableRow>
-                                    }
-                                </TableBody>
-                                {
-                                    (data.length > 10) &&
-                                    <CustomTablePagination
-                                        count={data.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onPageChange={handleChangePage}
-                                        onRowsPerPageChange={handleChangeRowsPerPage}
-                                    />
-                                }
-                            </Table>
-                    }
-                </>}
+                                            {userDetail.userRole === "admin" &&
+                                                <IconButton color="primary" aria-label="add to shopping cart"
+                                                    onClick={() => navigate(`/${(mode === modes.residential) ? 'form' : 'commercial'}/${row._id}`)}
+                                                >
+                                                    <EditTwoToneIcon />
+                                                </IconButton>
+                                            }
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {/* {
+                                    emptyRows > 0 &&
+                                    <TableRow style={{ height: 53 * emptyRows }}>
+                                        <TableCell colSpan={6} />
+                                    </TableRow>
+                                } */}
+                            </TableBody>
+                        </Table>
+
+                        {formsData?.data?.length &&
+                            <Pagination variant="outlined" color="primary" shape="rounded"
+                                page={page}
+                                count={formsData?.totalPages}
+                                onChange={handleChangePage}
+                            />
+                        }
+                    </>
+                )
+            )}
         </TableContainer>
     );
 }
