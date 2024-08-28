@@ -84,10 +84,10 @@ export default function SelectTextFields({ id, label, title, options, editable, 
     );
 }
 
-const SelectInput = ({ label, name, value, options, changeHandler }) => {
+const SelectInput = ({ label, name, value, options, changeHandler, className = null }) => {
 
     return (
-        <FormControl fullWidth >
+        <FormControl fullWidth className={className}>
             <Stack direction="row">
                 <Typography variant="h6" gutterBottom
                     style={{ fontSize: "14px", fontWeight: "bold", textAlign: "left" }}

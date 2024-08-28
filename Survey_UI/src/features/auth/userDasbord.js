@@ -29,10 +29,18 @@ export const userDashboard = createApi({
                     caste: body.caste,
                     cweEducation: body.cweEducation,
                     startDate: body.startDate,
-                    endDate: body.endDate
+                    endDate: body.endDate,
+                    birthdayDate: body.birthdayDate,
+                    constituency: body.constituency,
+                    votedLastElection: body.votedLastElection,
+                    categoryFallUnder: body.categoryFallUnder,
+                    pincode: body.pincode,
+                    boothNumber: body.boothNumber,
+                    wardNumber: body.wardNumber,
+                    isParticipated: body.isParticipated
                 },
                 method: 'POST',
-                body:{page:body.page,limit:body.limit}
+                body: { page: body.page, limit: body.limit }
             }),
             transformResponse: (response, meta, arg) => response,
             transformErrorResponse: (response, meta, arg) => response.data || response.error,

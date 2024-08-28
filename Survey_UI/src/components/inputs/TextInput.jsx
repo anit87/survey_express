@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import Popper from '../Popper';
 
-const TextInput = ({ label, title, editable,textValue, ...props }) => {
+const TextInput = ({ label, title, editable, textValue, ...props }) => {
     const [field, meta] = useField(props);
     const [anchorEl, setAnchorEl] = useState(null);
     const [helperTextInfo, setHelperText] = useState('');
@@ -24,7 +24,7 @@ const TextInput = ({ label, title, editable,textValue, ...props }) => {
 
     return (
         <>
-            <FormControl fullWidth sx={{mt:1}} >
+            <FormControl fullWidth sx={{ mt: 1 }} >
                 <Stack direction="row">
                     <Typography variant="h6" style={{ fontSize: "14px", fontWeight: "bold", textAlign: "left" }} gutterBottom>{label}</Typography>
                 </Stack>
@@ -62,7 +62,7 @@ const TextInput = ({ label, title, editable,textValue, ...props }) => {
                                         handleHelperIconClick(event, title)
                                     }
                                 >
-                                    <InfoIcon fontSize="small"/>
+                                    <InfoIcon fontSize="small" />
                                 </IconButton>
                         }
                     </Stack>
@@ -74,9 +74,47 @@ const TextInput = ({ label, title, editable,textValue, ...props }) => {
         </>
     );
 }
+
+
+const StaticTextInput = ({ label, name, type, changeHandler, value }) => {
+
+    return (
+        <>
+            <FormControl fullWidth sx={{ mt: 1 }} >
+                <Stack direction="row">
+                    <Typography variant="h6" style={{ fontSize: "14px", fontWeight: "bold", textAlign: "left" }} gutterBottom>{label}</Typography>
+                </Stack>
+
+                <Stack direction="row">
+                    <TextField
+                        margin="none"
+                        fullWidth
+                        size="small"
+                        InputLabelProps={{
+                            sx: { fontSize: '.8rem', mb: "8px" }
+                        }}
+                        InputProps={{
+                            sx: { fontSize: '14px' }
+                        }}
+                        label=""
+                        variant="outlined"
+                        name={name}
+                        type={type}
+                        onChange={changeHandler}
+                        value={value}
+                    />
+
+                </Stack>
+
+            </FormControl>
+        </>
+    );
+}
+
 TextInput.propTypes = {
     label: PropTypes.string,
     title: PropTypes.string
 }
 
-export default TextInput
+export default TextInput;
+export { StaticTextInput };

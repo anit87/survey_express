@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
-import { Stack, FormControl, IconButton } from '@mui/material';
+import { Stack, FormControl, IconButton, Button } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -22,10 +22,26 @@ import Loader from '../loader';
 import NoData from '../NoData';
 import TableHeader from './TableHeader';
 import { SelectInput } from '../inputs/SelectInput';
-import { generateIncomeOptions, maritalOptions, generateTrueFalseOptions, generateEducationalOptions, generatereligionOptions, occupationOptios, generateCasteOptions, generateEstablishmentOptions } from "../../utils/constants";
+import {
+    maritalOptions,
+    occupationOptios,
+    generateageOptions,
+    generateIncomeOptions,
+    generateTrueFalseOptions,
+    generateEducationalOptions,
+    generateEstablishmentOptions,
+    generategovernmentSchemesOptions,
+    generatecategoryOptions,
+    generateCasteOptions,
+    generatereligionOptions,
+    generateConstituencyOptions,
+    generateVotedLastElectionOptions
+} from '../../utils/constants';
+
 import { useLanguageData } from '../../utils/LanguageContext';
 import { modes, useModeData } from '../../utils/ModeContext';
 import { useGetSurveyFormsQuery } from '../../features/auth/userDasbord';
+import { StaticTextInput } from '../inputs/TextInput';
 
 const tableCells = [
     { label: 'S.No' },
@@ -77,7 +93,7 @@ export default function SurveyForms() {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(50);
 
-    const [filterData, setFilterData] = useState({
+    const initialState = {
         birthdayDate: '',
         maritalStatus: '',
         monthlyHouseholdIncome: '',
@@ -87,8 +103,18 @@ export default function SurveyForms() {
         caste: '',
         cweEducation: '',
         startDate: moment().subtract(1, 'months').format('YYYY-MM-DD'), // Setting defaultValue to today's date with previous month
-        endDate: new Date().toISOString().slice(0, 10)
-    });
+        endDate: new Date().toISOString().slice(0, 10),
+        constituency: '',
+        votedLastElection: '',
+        categoryFallUnder: '',
+        pincode: '',
+        boothNumber: '',
+        wardNumber: '',
+        isParticipated: []
+    }
+    const [filterData, setFilterData] = useState(initialState);
+
+
 
     const [activeAgents, setActiveAgents] = useState({
         status: false,
@@ -110,6 +136,11 @@ export default function SurveyForms() {
     const casteOptions = generateCasteOptions(translate);
     const religionOptions = generatereligionOptions(translate);
     const establishmentOptions = generateEstablishmentOptions(translate);
+    const votedLastElectionOptions = generateVotedLastElectionOptions(translate);
+    const constituencyOptions = generateConstituencyOptions(translate);
+    const governmentSchemesOptions = generategovernmentSchemesOptions(translate);
+    const ageOptions = generateageOptions(translate);
+    const categoryOptions = generatecategoryOptions(translate);
 
     useEffect(() => {
         const user = verifyUser(token);
@@ -216,7 +247,68 @@ export default function SurveyForms() {
 
             {mode === modes.residential && (
                 <>
-                    <h6 className='m-4' style={{ fontSize: "20px", fontWeight: "bold" }} >Smart Filters</h6>
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={{ xs: 1, sm: 2, md: 4 }}
+                        sx={{ mt: 1, mb: 1, ml: 1, mr: 1 }}
+                        className='m-4'
+                    >
+
+                        <h6 style={{ fontSize: "20px", fontWeight: "bold" }} >Smart Filters</h6>
+                        <Button variant="contained" size='small' onClick={() => setFilterData(initialState)} >Reset</Button>
+                    </Stack>
+
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={{ xs: 1, sm: 2, md: 4 }}
+                        sx={{ mt: 1, mb: 1, ml: 1, mr: 1 }}
+                    >
+                        <SelectInput
+                            label="Religion"
+                            name="religion"
+                            options={religionOptions}
+                            value={filterData.religion}
+                            changeHandler={changeHandler}
+                        />
+                        <SelectInput
+                            label="Caste"
+                            name="caste"
+                            options={casteOptions}
+                            value={filterData.caste}
+                            changeHandler={changeHandler}
+                        />
+
+                        <SelectInput
+                            label="Own Property"
+                            name="isOwnProperty"
+                            options={trueFalseOptions}
+                            value={filterData.isOwnProperty}
+                            changeHandler={changeHandler}
+                        />
+                        <StaticTextInput
+                            label='Pincode'
+                            name="pincode"
+                            type="number"
+                            changeHandler={changeHandler}
+                            value={filterData.pincode}
+                        />
+                        <StaticTextInput
+                            label="Booth Number"
+                            name="boothNumber"
+                            type="text"
+                            changeHandler={changeHandler}
+                            value={filterData.boothNumber}
+                        />
+                        <StaticTextInput
+                            label="Ward Number"
+                            name="wardNumber"
+                            type="number"
+                            changeHandler={changeHandler}
+                            value={filterData.wardNumber}
+                        />
+
+                    </Stack>
+
                     <Stack
                         direction={{ xs: 'column', sm: 'row' }}
                         spacing={{ xs: 1, sm: 2, md: 4 }}
@@ -240,47 +332,6 @@ export default function SurveyForms() {
                         />
 
                         <SelectInput
-                            label="Own Property"
-                            name="isOwnProperty"
-                            options={trueFalseOptions}
-                            value={filterData.isOwnProperty}
-                            changeHandler={changeHandler}
-                        />
-
-                        <DynamicDatePicker
-                            label="Filled From"
-                            name="startDate"
-                            defaultValue={filterData.startDate}
-                            minDate="2023-08-01"
-                            filterData={filterData}
-                            setFilterData={setFilterData}
-                        />
-
-                    </Stack>
-
-                    <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={{ xs: 1, sm: 2, md: 4 }}
-                        sx={{ mt: 1, mb: 1, ml: 1, mr: 1 }}
-                    >
-                        <FormControl fullWidth >
-                            <SelectInput
-                                label="Religion"
-                                name="religion"
-                                options={religionOptions}
-                                value={filterData.religion}
-                                changeHandler={changeHandler}
-                            />
-                            <SelectInput
-                                label="Caste"
-                                name="caste"
-                                options={casteOptions}
-                                value={filterData.caste}
-                                changeHandler={changeHandler}
-                            />
-                        </FormControl>
-
-                        <SelectInput
                             label="Occupation Status"
                             name="occupationStatus"
                             options={occupationOptios}
@@ -296,12 +347,78 @@ export default function SurveyForms() {
                             changeHandler={changeHandler}
                         />
 
+                        <SelectInput
+                            label="Constituency"
+                            name="constituency"
+                            options={constituencyOptions}
+                            value={filterData.constituency}
+                            changeHandler={changeHandler}
+                        />
+
+                        <SelectInput
+                            label="voted in the last election"
+                            name="votedLastElection"
+                            options={votedLastElectionOptions}
+                            value={filterData.votedLastElection}
+                            changeHandler={changeHandler}
+                        />
+                    </Stack>
+
+                    <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={{ xs: 1, sm: 2, md: 4 }}
+                        sx={{ mt: 1, mb: 3, ml: 1, mr: 1 }}
+                    >
+                        <SelectInput
+                            label={translate(`Category`)}
+                            name="categoryFallUnder"
+                            options={categoryOptions}
+                            value={filterData.categoryFallUnder}
+                            changeHandler={changeHandler}
+                        />
+
+                        <SelectInput
+                            label={translate("ApplicantsAge")}
+                            title="Please Provide Your Age Based On Your Last Birthday."
+                            id="birthdayDate"
+                            name="birthdayDate"
+                            options={ageOptions}
+                            value={filterData.birthdayDate}
+                            changeHandler={changeHandler}
+                        />
+                        <SelectInput
+                            label={translate('GovernmentSchemes')}
+                            name="isParticipated"
+                            id="isParticipated"
+                            options={governmentSchemesOptions}
+                            value={filterData.isParticipated}
+                            changeHandler={changeHandler}
+                        />
+
+                        <DynamicDatePicker
+                            label="Filled From"
+                            name="startDate"
+                            defaultValue={filterData.startDate}
+                            minDate="2023-08-01"
+                            filterData={filterData}
+                            setFilterData={setFilterData}
+                        />
+
                         <DynamicDatePicker
                             label="Upto"
                             name="endDate"
                             minDate={filterData.startDate}
                             filterData={filterData}
                             setFilterData={setFilterData}
+                        />
+
+                        <SelectInput
+                            label=""
+                            name=""
+                            id=""
+                            options={trueFalseOptions}
+                            changeHandler={changeHandler}
+                            className='visibility-hidden'
                         />
                     </Stack>
                 </>
